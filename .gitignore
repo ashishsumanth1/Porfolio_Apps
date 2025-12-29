@@ -1,0 +1,16 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+
+# Data
+/data/
+!data/.gitkeep
+
+# Logs
+*.log
+
+# IDE
+.vscode/
