@@ -99,12 +99,24 @@ class PostItem(BaseModel):
 
 # --- App Setup ---
 
-engine = get_engine()
+# Lazy engine initialization
+_engine = None
+
+def get_db_engine():
+    global _engine
+    if _engine is None:
+        _engine = get_engine()
+    return _engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    # Startup - initialize engine
+    global _engine
+    try:
+        _engine = get_engine()
+    except Exception as e:
+        print(f"Warning: Could not connect to database: {e}")
     yield
     # Shutdown
 
@@ -161,7 +173,7 @@ async def health_check():
     """Health check endpoint."""
     db_status = "connected"
     try:
-        with engine.connect() as conn:
+        with get_db_engine().connect() as conn:
             conn.execute(text("SELECT 1"))
     except Exception:
         db_status = "disconnected"
@@ -176,7 +188,7 @@ async def health_check():
 @app.get("/api/stats", response_model=StatsResponse)
 async def get_stats():
     """Get overall statistics."""
-    with engine.connect() as conn:
+    with get_db_engine().connect() as conn:
         posts = conn.execute(text("SELECT COUNT(*) FROM posts")).scalar() or 0
         comments = conn.execute(text("SELECT COUNT(*) FROM comments")).scalar() or 0
         signals = conn.execute(text("SELECT COUNT(*) FROM signals")).scalar() or 0
@@ -190,7 +202,7 @@ async def get_stats():
 @app.get("/api/themes", response_model=list[ThemeSummary])
 async def list_themes():
     """List all discovered themes/clusters."""
-    with engine.connect() as conn:
+    with get_db_engine().connect() as conn:
         rows = conn.execute(
             text("""
             SELECT cluster_id, label, top_terms, doc_count
@@ -214,7 +226,7 @@ async def list_themes():
 @app.get("/api/themes/{cluster_id}", response_model=ThemeDetail)
 async def get_theme(cluster_id: int, limit: int = Query(20, le=100)):
     """Get detailed view of a specific theme."""
-    with engine.connect() as conn:
+    with get_db_engine().connect() as conn:
         # Get cluster info
         cluster = conn.execute(
             text("""
@@ -279,7 +291,7 @@ async def list_signals(
 
     where_sql = " AND ".join(where_clauses)
 
-    with engine.connect() as conn:
+    with get_db_engine().connect() as conn:
         rows = conn.execute(
             text(f"""
             SELECT 
@@ -342,7 +354,7 @@ async def list_posts(
     sort_field = field_map.get(sort_by, "p.created_utc")
     sort_order = "ASC" if order == "asc" else "DESC"
 
-    with engine.connect() as conn:
+    with get_db_engine().connect() as conn:
         rows = conn.execute(
             text(f"""
             SELECT post_id, title, body, permalink, score, num_comments, 
@@ -373,7 +385,7 @@ async def list_posts(
 @app.get("/api/posts/{post_id}")
 async def get_post(post_id: str):
     """Get a single post with its comments."""
-    with engine.connect() as conn:
+    with get_db_engine().connect() as conn:
         post = conn.execute(
             text("""
             SELECT post_id, title, body, permalink, score, num_comments, created_utc, subreddit
