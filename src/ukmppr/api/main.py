@@ -146,22 +146,13 @@ app.add_middleware(
 # Serve static frontend files in production
 STATIC_DIR = Path(__file__).parent.parent.parent.parent / "static"
 if STATIC_DIR.exists():
-    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
+    # Mount assets directory
+    if (STATIC_DIR / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
     
-    @app.get("/")
+    # Serve index.html for root
+    @app.get("/", include_in_schema=False)
     async def serve_frontend():
-        return FileResponse(STATIC_DIR / "index.html")
-    
-    @app.get("/{path:path}")
-    async def serve_frontend_routes(path: str):
-        # Serve API routes normally
-        if path.startswith("api/"):
-            return None
-        # Serve static files if they exist
-        file_path = STATIC_DIR / path
-        if file_path.exists() and file_path.is_file():
-            return FileResponse(file_path)
-        # Otherwise serve index.html for SPA routing
         return FileResponse(STATIC_DIR / "index.html")
 
 
@@ -447,3 +438,17 @@ async def get_post(post_id: str):
         if signal
         else None,
     }
+
+
+# --- SPA Catch-all Route (must be last) ---
+# This handles client-side routing for the React app
+if STATIC_DIR.exists():
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        """Serve the SPA for any non-API routes."""
+        # Check if it's a static file
+        file_path = STATIC_DIR / full_path
+        if file_path.exists() and file_path.is_file():
+            return FileResponse(file_path)
+        # Otherwise serve index.html for client-side routing
+        return FileResponse(STATIC_DIR / "index.html")
