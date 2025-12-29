@@ -531,7 +531,7 @@ export default function WardExplorer() {
                     cy="50%"
                     outerRadius={100}
                     dataKey="value"
-                    label={({ name, pct }) => `${pct}%`}
+                    label={({ percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
                   >
                     {wardData.qualificationData.map((entry, index) => (
                       <Cell 
@@ -541,7 +541,7 @@ export default function WardExplorer() {
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value: number) => value.toLocaleString()}
+                    formatter={(value) => (value as number)?.toLocaleString() ?? ''}
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
                       borderColor: 'hsl(var(--border))',
@@ -568,7 +568,7 @@ export default function WardExplorer() {
                   <XAxis type="number" domain={[0, 100]} />
                   <YAxis type="category" dataKey="metric" width={80} />
                   <Tooltip 
-                    formatter={(value: number) => `${value}%`}
+                    formatter={(value) => `${value ?? 0}%`}
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
                       borderColor: 'hsl(var(--border))',
@@ -604,7 +604,7 @@ export default function WardExplorer() {
                 />
                 <YAxis />
                 <Tooltip 
-                  formatter={(value: number, name: string) => [value.toLocaleString(), name === 'value' ? 'Count' : name]}
+                  formatter={(value, name) => [(value as number)?.toLocaleString() ?? '', name === 'value' ? 'Count' : String(name)]}
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     borderColor: 'hsl(var(--border))',
