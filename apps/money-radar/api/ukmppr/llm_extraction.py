@@ -90,16 +90,18 @@ IMPORTANT:
 JSON response:"""
 
 
-def call_groq(prompt: str, model: str | None = None, timeout: float = 30.0, max_retries: int = 5) -> str | None:
+def call_groq(
+    prompt: str, model: str | None = None, timeout: float = 30.0, max_retries: int = 5
+) -> str | None:
     """Call Groq API (free tier - 14,400 requests/day) with rate limit handling."""
     import time
-    
+
     model = model or settings.groq_model
-    
+
     if not settings.groq_api_key:
         logger.warning("GROQ_API_KEY not set - falling back to Ollama")
         return call_ollama(prompt, settings.ollama_model, timeout)
-    
+
     for attempt in range(max_retries):
         try:
             response = httpx.post(
@@ -116,7 +118,7 @@ def call_groq(prompt: str, model: str | None = None, timeout: float = 30.0, max_
                 },
                 timeout=timeout,
             )
-            
+
             # Handle rate limiting (429)
             if response.status_code == 429:
                 # Get retry-after header or use exponential backoff
@@ -124,19 +126,23 @@ def call_groq(prompt: str, model: str | None = None, timeout: float = 30.0, max_
                 if retry_after:
                     wait_time = float(retry_after)
                 else:
-                    wait_time = min(2 ** attempt * 2, 60)  # 2, 4, 8, 16, 32 seconds (max 60)
-                
-                logger.info(f"Rate limited. Waiting {wait_time:.1f}s before retry {attempt + 1}/{max_retries}")
+                    wait_time = min(2**attempt * 2, 60)  # 2, 4, 8, 16, 32 seconds (max 60)
+
+                logger.info(
+                    f"Rate limited. Waiting {wait_time:.1f}s before retry {attempt + 1}/{max_retries}"
+                )
                 time.sleep(wait_time)
                 continue
-            
+
             response.raise_for_status()
             return response.json()["choices"][0]["message"]["content"]
-            
+
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 429:
-                wait_time = min(2 ** attempt * 2, 60)
-                logger.info(f"Rate limited. Waiting {wait_time:.1f}s before retry {attempt + 1}/{max_retries}")
+                wait_time = min(2**attempt * 2, 60)
+                logger.info(
+                    f"Rate limited. Waiting {wait_time:.1f}s before retry {attempt + 1}/{max_retries}"
+                )
                 time.sleep(wait_time)
                 continue
             logger.warning(f"Groq call failed: {e}")
@@ -144,7 +150,7 @@ def call_groq(prompt: str, model: str | None = None, timeout: float = 30.0, max_
         except Exception as e:
             logger.warning(f"Groq call failed: {e}")
             return None
-    
+
     logger.warning(f"Max retries ({max_retries}) exceeded for Groq API")
     return None
 
@@ -315,7 +321,7 @@ def run_extraction(
     processed = 0
     successful = 0
     failed = 0
-    
+
     for row in rows:
         content_id, content_type, doc_text = row
         if not doc_text or len(doc_text.strip()) < 20:
@@ -326,8 +332,10 @@ def run_extraction(
 
         if result:
             # Determine which model was used
-            model_name = settings.groq_model if settings.llm_provider == "groq" else settings.ollama_model
-            
+            model_name = (
+                settings.groq_model if settings.llm_provider == "groq" else settings.ollama_model
+            )
+
             with engine.begin() as conn:
                 conn.execute(
                     text("""

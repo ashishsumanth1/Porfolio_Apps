@@ -101,6 +101,7 @@ class PostItem(BaseModel):
 # Lazy engine initialization
 _engine = None
 
+
 def get_db_engine():
     global _engine
     if _engine is None:
@@ -131,8 +132,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173", 
-        "http://localhost:3000", 
+        "http://localhost:5173",
+        "http://localhost:3000",
         "http://127.0.0.1:5173",
         "https://*.railway.app",  # Railway deployments
         "*",  # Allow all in production (served from same origin)
@@ -148,7 +149,7 @@ if STATIC_DIR.exists():
     # Mount assets directory
     if (STATIC_DIR / "assets").exists():
         app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
-    
+
     # Serve index.html for root
     @app.get("/", include_in_schema=False)
     async def serve_frontend():
@@ -442,6 +443,7 @@ async def get_post(post_id: str):
 # --- SPA Catch-all Route (must be last) ---
 # This handles client-side routing for the React app
 if STATIC_DIR.exists():
+
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str):
         """Serve the SPA for any non-API routes."""

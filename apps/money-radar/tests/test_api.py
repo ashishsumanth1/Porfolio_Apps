@@ -1,6 +1,7 @@
 """
 Tests for the FastAPI endpoints.
 """
+
 import pytest
 
 

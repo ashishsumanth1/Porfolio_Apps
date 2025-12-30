@@ -30,14 +30,15 @@ class Settings(BaseSettings):
         # Handle Railway's DATABASE_URL or fallback to local
         if not self.database_url:
             self.database_url = os.environ.get(
-                "DATABASE_URL", 
-                "postgresql+psycopg://ukmppr:ukmppr@localhost:5432/ukmppr"
+                "DATABASE_URL", "postgresql+psycopg://ukmppr:ukmppr@localhost:5432/ukmppr"
             )
         # Railway uses postgres:// but SQLAlchemy needs postgresql://
         if self.database_url.startswith("postgres://"):
             self.database_url = self.database_url.replace("postgres://", "postgresql+psycopg://", 1)
         elif self.database_url.startswith("postgresql://") and "+psycopg" not in self.database_url:
-            self.database_url = self.database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+            self.database_url = self.database_url.replace(
+                "postgresql://", "postgresql+psycopg://", 1
+            )
 
 
 settings = Settings()

@@ -1,6 +1,7 @@
 """
 Test configuration and fixtures for ukmppr tests.
 """
+
 from pathlib import Path
 import sys
 import pytest
@@ -22,8 +23,7 @@ sys.modules.pop("api", None)
 def test_database_url():
     """Get test database URL from environment or use default."""
     return os.getenv(
-        "DATABASE_URL",
-        "postgresql+psycopg://ukmppr:ukmppr@localhost:5432/ukmppr_test"
+        "DATABASE_URL", "postgresql+psycopg://ukmppr:ukmppr@localhost:5432/ukmppr_test"
     )
 
 
