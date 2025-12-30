@@ -23,6 +23,7 @@ jobs:
       run:
         working-directory: ./web
     steps:
+      - uses: actions/configure-pages@v5
       - uses: actions/checkout@v4
 
       - name: Set up Node.js 22
@@ -43,6 +44,9 @@ jobs:
 
       - name: SPA fallback
         run: cp dist/index.html dist/404.html
+
+      - name: Disable Jekyll
+        run: touch dist/.nojekyll
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
