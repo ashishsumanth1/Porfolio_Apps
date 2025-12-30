@@ -38,7 +38,7 @@ jobs:
       - name: Build
         env:
           VITE_API_URL: https://porfolioapps-production.up.railway.app
-          VITE_BASE: "/"
+          VITE_BASE: "/Porfolio_Apps/"
         run: npm run build
 
       - name: SPA fallback
