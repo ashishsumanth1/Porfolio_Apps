@@ -6,7 +6,6 @@ Modern REST API for the web dashboard.
 
 from __future__ import annotations
 
-import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path

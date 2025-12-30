@@ -2,7 +2,6 @@
 Tests for LLM extraction module.
 """
 import pytest
-from unittest.mock import patch, MagicMock
 
 
 class TestExtractFromText:

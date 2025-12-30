@@ -316,8 +316,6 @@ def run_extraction(
     successful = 0
     failed = 0
     
-    import time
-
     for row in rows:
         content_id, content_type, doc_text = row
         if not doc_text or len(doc_text.strip()) < 20:

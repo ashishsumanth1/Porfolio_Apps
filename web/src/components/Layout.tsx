@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
 import { 
   LayoutDashboard, 
@@ -61,21 +61,25 @@ export default function Layout({ projectName = 'Money Radar', basePath = '', nav
     }
     return false
   })
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
-  const prevPathRef = useRef(location.pathname)
+  const [menuState, setMenuState] = useState({ open: false, path: location.pathname })
+  const isMenuOpen = menuState.open && menuState.path === location.pathname
+
+  const toggleMenu = () => {
+    setMenuState((prev) => {
+      const prevOpen = prev.open && prev.path === location.pathname
+      const next = !prevOpen
+      return {
+        open: next,
+        path: next ? location.pathname : prev.path,
+      }
+    })
+  }
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
     localStorage.setItem('theme', dark ? 'dark' : 'light')
   }, [dark])
-
-  useEffect(() => {
-    if (prevPathRef.current !== location.pathname) {
-      setMobileMenuOpen(false)
-      prevPathRef.current = location.pathname
-    }
-  }, [location.pathname])
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -144,10 +148,10 @@ export default function Layout({ projectName = 'Money Radar', basePath = '', nav
               
               {/* Mobile menu button */}
               <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                onClick={toggleMenu}
                 className="md:hidden w-10 h-10 rounded-full flex items-center justify-center hover:bg-[hsl(var(--muted))] transition-colors"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
@@ -156,7 +160,7 @@ export default function Layout({ projectName = 'Money Radar', basePath = '', nav
         {/* Mobile menu - slide down */}
         <div 
           className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${
-            mobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+            isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
           <nav className="px-6 pb-6 space-y-1">
