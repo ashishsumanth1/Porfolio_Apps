@@ -5,7 +5,7 @@ FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app/web
 
-# Install frontend dependencies
+# Install frontend dependencies (portfolio app)
 COPY web/package*.json ./
 RUN npm ci --legacy-peer-deps
 
@@ -30,8 +30,8 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Install Python dependencies
-COPY pyproject.toml README.md ./
-COPY src/ ./src/
+COPY apps/money-radar/pyproject.toml apps/money-radar/README.md ./
+COPY apps/money-radar/api/ ./api/
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir .
 

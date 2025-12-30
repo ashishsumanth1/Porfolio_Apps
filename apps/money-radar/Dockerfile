@@ -17,7 +17,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Install Python dependencies
 COPY pyproject.toml README.md ./
-COPY src/ ./src/
+COPY api/ ./api/
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir .
 
@@ -38,7 +38,7 @@ COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy application code
-COPY src/ ./src/
+COPY api/ ./api/
 
 # Create non-root user
 RUN useradd -m -r appuser && \

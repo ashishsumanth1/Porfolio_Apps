@@ -1,0 +1,8 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "apps/money-radar/Dockerfile.railway"
+
+[deploy]
+startCommand = "sh -c 'uvicorn ukmppr.api.main:app --host 0.0.0.0 --port ${PORT:-8000}'"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
