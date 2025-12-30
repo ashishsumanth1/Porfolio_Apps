@@ -9,8 +9,22 @@ __pycache__/
 /data/
 !data/.gitkeep
 
+# Monorepo app artifacts
+**/node_modules/
+**/dist/
+**/build/
+**/.vite/
+
+# App data (keep exports, ignore raw ingests)
+apps/money-radar/data/bronze/
+apps/money-radar/data/eval/
+
 # Logs
 *.log
 
 # IDE
 .vscode/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/

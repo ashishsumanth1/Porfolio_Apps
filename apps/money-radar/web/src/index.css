@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+/* Apple-inspired Design System */
+:root {
+  /* Light mode - Clean, bright, airy */
+  --background: 0 0% 99%;
+  --foreground: 0 0% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 72% 51%;
+  --border: 0 0% 92%;
+  --ring: 0 0% 9%;
+  --radius: 1rem;
+}
+
+.dark {
+  /* Dark mode - Deep, rich, sophisticated */
+  --background: 0 0% 5%;
+  --foreground: 0 0% 95%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 95%;
+  --primary: 0 0% 95%;
+  --primary-foreground: 0 0% 5%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 95%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 55%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 95%;
+  --destructive: 0 62% 45%;
+  --border: 0 0% 15%;
+  --ring: 0 0% 83%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  letter-spacing: -0.01em;
+  font-feature-settings: 'ss01' on, 'ss02' on;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ultra-smooth scrollbar */
+::-webkit-scrollbar { 
+  width: 8px; 
+  height: 8px; 
+}
+::-webkit-scrollbar-track { 
+  @apply bg-transparent; 
+}
+::-webkit-scrollbar-thumb { 
+  @apply bg-[hsl(var(--foreground)/0.1)] rounded-full;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { 
+  @apply bg-[hsl(var(--foreground)/0.2)]; 
+}
+
+/* Apple-style card with subtle shadow */
+.card {
+  @apply bg-[hsl(var(--card))] rounded-2xl;
+  box-shadow: 
+    0 0 0 1px hsl(var(--border) / 0.5),
+    0 1px 2px hsl(var(--foreground) / 0.02),
+    0 4px 8px hsl(var(--foreground) / 0.02),
+    0 8px 16px hsl(var(--foreground) / 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  box-shadow: 
+    0 0 0 1px hsl(var(--border) / 0.8),
+    0 2px 4px hsl(var(--foreground) / 0.03),
+    0 8px 16px hsl(var(--foreground) / 0.04),
+    0 16px 32px hsl(var(--foreground) / 0.04);
+  transform: translateY(-2px);
+}
+
+/* Subtle glass effect */
+.glass {
+  @apply bg-[hsl(var(--card)/0.7)] backdrop-blur-2xl;
+  box-shadow: 
+    0 0 0 1px hsl(var(--border) / 0.3),
+    0 1px 3px hsl(var(--foreground) / 0.02);
+}
+
+/* Smooth button transitions */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-200;
+  @apply hover:scale-[1.02] active:scale-[0.98];
+}
+
+.btn-primary {
+  @apply bg-[hsl(var(--foreground))] text-[hsl(var(--background))] px-6 py-2.5;
+}
+
+.btn-secondary {
+  @apply bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] px-6 py-2.5 hover:bg-[hsl(var(--muted)/0.8)];
+}
+
+/* Apple-style pill badge */
+.badge {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium;
+  @apply bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))];
+}
+
+.badge-blue {
+  @apply bg-blue-500/10 text-blue-600 dark:text-blue-400;
+}
+
+.badge-green {
+  @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400;
+}
+
+.badge-orange {
+  @apply bg-orange-500/10 text-orange-600 dark:text-orange-400;
+}
+
+.badge-purple {
+  @apply bg-purple-500/10 text-purple-600 dark:text-purple-400;
+}
+
+/* Smooth fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Staggered children animation */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+
+/* Large display text */
+.display {
+  @apply text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight;
+  letter-spacing: -0.025em;
+}
+
+/* Section heading */
+.section-title {
+  @apply text-2xl sm:text-3xl font-semibold tracking-tight;
+  letter-spacing: -0.02em;
+}
+
+/* Subtle hover lift */
+.hover-lift {
+  @apply transition-all duration-300;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px hsl(var(--foreground) / 0.1);
+}
+
+/* Live indicator pulse */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Number counter animation placeholder */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Interactive list item */
+.list-item {
+  @apply flex items-center gap-4 p-4 -mx-4 rounded-2xl transition-all duration-200;
+  @apply hover:bg-[hsl(var(--muted)/0.5)] cursor-pointer;
+}
+
+/* Focus ring */
+*:focus-visible {
+  @apply outline-none ring-2 ring-[hsl(var(--ring))] ring-offset-2 ring-offset-[hsl(var(--background))];
+}

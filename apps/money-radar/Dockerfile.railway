@@ -1,0 +1,55 @@
+# UK Money Pain Point Radar - Railway Deployment
+# Combined backend + frontend for single-service deployment
+
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /app/web
+
+# Install frontend dependencies
+COPY web/package*.json ./
+RUN npm ci --legacy-peer-deps
+
+# Build frontend
+COPY web/ ./
+RUN npm run build
+
+
+# Python backend with embedded frontend
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Python dependencies
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir .
+
+# Copy built frontend to serve as static files
+COPY --from=frontend-builder /app/web/dist ./static
+
+# Create non-root user
+RUN useradd -m -r appuser && \
+    mkdir -p /app/data && \
+    chown -R appuser:appuser /app
+USER appuser
+
+# Environment
+ENV UKMPPR_LOG_LEVEL=INFO
+
+# Railway assigns PORT dynamically, default to 3000 for compatibility
+ENV PORT=3000
+EXPOSE 3000
+
+# Start FastAPI server
+CMD ["sh", "-c", "uvicorn ukmppr.api.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
