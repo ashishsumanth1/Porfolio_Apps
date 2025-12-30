@@ -144,7 +144,9 @@ app.add_middleware(
 )
 
 # Serve static frontend files in production
-STATIC_DIR = Path(__file__).parent.parent.parent.parent / "static"
+STATIC_DIR = Path("/app/static")
+if not STATIC_DIR.exists():
+    STATIC_DIR = Path(__file__).parent.parent.parent.parent / "static"
 if STATIC_DIR.exists():
     # Mount assets directory
     if (STATIC_DIR / "assets").exists():
