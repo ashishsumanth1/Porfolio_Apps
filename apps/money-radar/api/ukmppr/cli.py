@@ -120,15 +120,21 @@ def score_signals_cmd(
     limit_posts: int = typer.Option(500, "--limit-posts"),
     limit_comments: int = typer.Option(2000, "--limit-comments"),
     force: bool = typer.Option(False, "--force"),
+    method: str = typer.Option("rules", "--method", help="rules|llm|hybrid"),
+    hybrid_min_score: float = typer.Option(
+        0.2, "--hybrid-min-score", help="Min rule score before skipping LLM"
+    ),
     top: int = typer.Option(15, "--top"),
 ) -> None:
-    """Compute rule-based signal flags/scores for posts/comments."""
+    """Compute signal flags/scores for posts/comments."""
     configure_logging(settings.log_level)
     engine = get_engine()
     init_db(engine)
 
     if scope not in ("posts", "comments", "both"):
         raise typer.BadParameter("--scope must be one of: posts, comments, both")
+    if method not in ("rules", "llm", "hybrid"):
+        raise typer.BadParameter("--method must be one of: rules, llm, hybrid")
 
     result = score_signals(
         engine=engine,
@@ -137,6 +143,8 @@ def score_signals_cmd(
         limit_posts=limit_posts,
         limit_comments=limit_comments,
         force=force,
+        method=method,  # type: ignore[arg-type]
+        hybrid_min_score=hybrid_min_score,
     )
     typer.echo(f"posts_scored={result.posts_scored} comments_scored={result.comments_scored}")
 

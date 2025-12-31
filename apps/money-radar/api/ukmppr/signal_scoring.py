@@ -57,15 +57,12 @@ def score_text(text: str | None) -> SignalResult:
     if mentions_platform:
         detected.append("platform")
 
-    # Simple additive score: keeps ordering stable and understandable.
-    score = 0.0
-    score += 0.35 if is_question else 0.0
-    score += 0.35 if asks_recommendation else 0.0
-    score += 0.2 if mentions_cost else 0.0
-    score += 0.2 if mentions_platform else 0.0
-
-    # Cap to [0, 1]
-    score = min(1.0, score)
+    score = score_from_flags(
+        is_question=is_question,
+        asks_recommendation=asks_recommendation,
+        mentions_cost=mentions_cost,
+        mentions_platform=mentions_platform,
+    )
 
     return SignalResult(
         is_question=is_question,
@@ -75,3 +72,22 @@ def score_text(text: str | None) -> SignalResult:
         signal_score=score,
         detected_keywords=detected,
     )
+
+
+def score_from_flags(
+    *,
+    is_question: bool,
+    asks_recommendation: bool,
+    mentions_cost: bool,
+    mentions_platform: bool,
+) -> float:
+    """Compute a stable signal score from boolean flags."""
+    # Simple additive score: keeps ordering stable and understandable.
+    score = 0.0
+    score += 0.35 if is_question else 0.0
+    score += 0.35 if asks_recommendation else 0.0
+    score += 0.2 if mentions_cost else 0.0
+    score += 0.2 if mentions_platform else 0.0
+
+    # Cap to [0, 1]
+    return min(1.0, score)

@@ -7,10 +7,12 @@ from typing import Literal
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
-from ukmppr.signal_scoring import score_text
+from ukmppr.llm_signal_scoring import score_text_llm
+from ukmppr.signal_scoring import SignalResult, score_text
 
 
 Scope = Literal["posts", "comments", "both"]
+Method = Literal["rules", "llm", "hybrid"]
 
 
 @dataclass(frozen=True)
@@ -35,9 +37,8 @@ def _upsert_signal(
     content_type: str,
     content_id: str,
     post_id: str,
-    text_body: str | None,
+    result: SignalResult,
 ) -> None:
-    s = score_text(text_body)
     conn.execute(
         text(
             """
@@ -65,14 +66,37 @@ def _upsert_signal(
             "content_type": content_type,
             "content_id": content_id,
             "post_id": post_id,
-            "is_question": s.is_question,
-            "asks_recommendation": s.asks_recommendation,
-            "mentions_cost": s.mentions_cost,
-            "mentions_platform": s.mentions_platform,
-            "signal_score": s.signal_score,
-            "detected_keywords": json.dumps(s.detected_keywords),
+            "is_question": result.is_question,
+            "asks_recommendation": result.asks_recommendation,
+            "mentions_cost": result.mentions_cost,
+            "mentions_platform": result.mentions_platform,
+            "signal_score": result.signal_score,
+            "detected_keywords": json.dumps(result.detected_keywords),
         },
     )
+
+
+def _score_text_with_method(
+    text_body: str | None,
+    *,
+    method: Method,
+    hybrid_min_score: float,
+) -> SignalResult:
+    if method == "rules":
+        return score_text(text_body)
+    if method == "llm":
+        return score_text_llm(text_body)
+    if method == "hybrid":
+        rule_result = score_text(text_body)
+        if (
+            rule_result.signal_score >= hybrid_min_score
+            or rule_result.is_question
+            or rule_result.asks_recommendation
+        ):
+            return rule_result
+        return score_text_llm(text_body)
+
+    raise ValueError(f"Unsupported scoring method: {method}")
 
 
 def get_top_signals(
@@ -118,6 +142,8 @@ def score_signals(
     limit_posts: int = 500,
     limit_comments: int = 2000,
     force: bool = False,
+    method: Method = "rules",
+    hybrid_min_score: float = 0.2,
 ) -> ScoreSignalsResult:
     posts_scored = 0
     comments_scored = 0
@@ -144,12 +170,15 @@ def score_signals(
             ).fetchall()
 
             for post_id, combined in rows:
+                result = _score_text_with_method(
+                    combined, method=method, hybrid_min_score=hybrid_min_score
+                )
                 _upsert_signal(
                     conn=conn,
                     content_type="post",
                     content_id=post_id,
                     post_id=post_id,
-                    text_body=combined,
+                    result=result,
                 )
                 posts_scored += 1
 
@@ -175,12 +204,15 @@ def score_signals(
             ).fetchall()
 
             for comment_id, post_id, body in rows:
+                result = _score_text_with_method(
+                    body, method=method, hybrid_min_score=hybrid_min_score
+                )
                 _upsert_signal(
                     conn=conn,
                     content_type="comment",
                     content_id=comment_id,
                     post_id=post_id,
-                    text_body=body,
+                    result=result,
                 )
                 comments_scored += 1
 
