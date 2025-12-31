@@ -95,6 +95,8 @@ def ingest_threads(
     engine: Engine,
     bronze_dir: Path,
     user_agent: str,
+    client_id: str | None = None,
+    client_secret: str | None = None,
     subreddit: str,
     max_posts: int = 10,
     min_comments: int = 30,
@@ -135,7 +137,11 @@ def ingest_threads(
     if posts_considered == 0:
         return ThreadIngestResult(0, 0, 0)
 
-    client = RedditClient(user_agent=user_agent)
+    client = RedditClient(
+        user_agent=user_agent,
+        client_id=client_id,
+        client_secret=client_secret,
+    )
     try:
         for post_id, permalink, _, _ in rows:
             payload = client.fetch_thread_json(post_id=post_id, limit=comment_limit, sort=sort)

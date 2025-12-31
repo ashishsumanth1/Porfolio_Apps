@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     database_url: str = ""
 
     reddit_user_agent: str = "ukmppr/0.1 (contact: you@example.com)"
+    reddit_client_id: str = ""
+    reddit_client_secret: str = ""
 
     bronze_dir: Path = Path("data/bronze")
 

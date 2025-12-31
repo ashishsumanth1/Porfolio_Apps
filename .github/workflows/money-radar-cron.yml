@@ -1,14 +1,10 @@
 name: Money Radar Pipeline
 
 on:
-  schedule:
-    - cron: "*/10 * * * *" # frequent listings ingest (UTC)
-    - cron: "0 3 * * *" # daily ingestion/scoring (UTC)
-    - cron: "30 3 * * 0" # weekly clustering/extraction (UTC, Sunday)
   workflow_dispatch:
     inputs:
       mode:
-        description: "daily or weekly"
+        description: "manual run mode"
         required: true
         default: "daily"
         type: choice
@@ -26,9 +22,7 @@ concurrency:
 
 jobs:
   frequent:
-    if: >
-      (github.event_name == 'schedule' && github.event.schedule == '*/10 * * * *') ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'frequent')
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'frequent'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -37,6 +31,9 @@ jobs:
       DATABASE_URL: ${{ secrets.MONEY_RADAR_DATABASE_URL }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       LLM_PROVIDER: groq
+      REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+      REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+      REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
     steps:
       - uses: actions/checkout@v4
 
@@ -62,9 +59,7 @@ jobs:
         run: python -m ukmppr score signals --method hybrid --hybrid-min-score 0.4 --limit-posts 200 --limit-comments 0
 
   daily:
-    if: >
-      (github.event_name == 'schedule' && github.event.schedule == '0 3 * * *') ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'daily')
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'daily'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -73,6 +68,9 @@ jobs:
       DATABASE_URL: ${{ secrets.MONEY_RADAR_DATABASE_URL }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       LLM_PROVIDER: groq
+      REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+      REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+      REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
     steps:
       - uses: actions/checkout@v4
 
@@ -104,9 +102,7 @@ jobs:
         run: python -m ukmppr trends compute --weeks 24
 
   weekly:
-    if: >
-      (github.event_name == 'schedule' && github.event.schedule == '30 3 * * 0') ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'weekly')
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'weekly'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -115,6 +111,9 @@ jobs:
       DATABASE_URL: ${{ secrets.MONEY_RADAR_DATABASE_URL }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       LLM_PROVIDER: groq
+      REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+      REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+      REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
     steps:
       - uses: actions/checkout@v4
 

@@ -28,6 +28,8 @@ def ingest_new_posts(
     engine: Engine,
     bronze_dir: Path,
     user_agent: str,
+    client_id: str | None = None,
+    client_secret: str | None = None,
     subreddit: str,
     limit: int = 100,
     pages: int = 1,
@@ -51,7 +53,11 @@ def ingest_new_posts(
     fetched = 0
     inserted = 0
 
-    client = RedditClient(user_agent=user_agent)
+    client = RedditClient(
+        user_agent=user_agent,
+        client_id=client_id,
+        client_secret=client_secret,
+    )
     try:
         current_after = after
         for _ in range(pages):

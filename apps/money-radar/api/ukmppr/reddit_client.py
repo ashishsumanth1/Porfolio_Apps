@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+import time
 from typing import Any
 
 import httpx
@@ -19,7 +20,21 @@ class RedditListing:
 
 
 class RedditClient:
-    def __init__(self, *, user_agent: str, timeout_s: float = 30.0) -> None:
+    def __init__(
+        self,
+        *,
+        user_agent: str,
+        timeout_s: float = 30.0,
+        client_id: str | None = None,
+        client_secret: str | None = None,
+    ) -> None:
+        self._user_agent = user_agent
+        self._client_id = client_id
+        self._client_secret = client_secret
+        self._use_oauth = bool(client_id and client_secret)
+        self._token: str | None = None
+        self._token_expiry: float = 0.0
+        self._base_url = "https://oauth.reddit.com" if self._use_oauth else "https://www.reddit.com"
         self._client = httpx.Client(
             headers={"User-Agent": user_agent},
             timeout=timeout_s,
@@ -28,6 +43,33 @@ class RedditClient:
 
     def close(self) -> None:
         self._client.close()
+
+    def _ensure_token(self) -> None:
+        if not self._use_oauth:
+            return
+        if self._token and time.time() < self._token_expiry:
+            return
+        if not self._client_id or not self._client_secret:
+            raise RuntimeError("OAuth requested but client_id/client_secret missing")
+
+        resp = self._client.post(
+            "https://www.reddit.com/api/v1/access_token",
+            auth=(self._client_id, self._client_secret),
+            data={"grant_type": "client_credentials"},
+            headers={"User-Agent": self._user_agent},
+        )
+        resp.raise_for_status()
+        payload = resp.json()
+        self._token = payload.get("access_token")
+        expires_in = float(payload.get("expires_in", 3600))
+        self._token_expiry = time.time() + max(expires_in - 60, 0)
+
+    def _get(self, path: str, params: dict[str, Any]) -> httpx.Response:
+        if self._use_oauth:
+            self._ensure_token()
+            headers = {"Authorization": f"bearer {self._token}"}
+            return self._client.get(f"{self._base_url}{path}", params=params, headers=headers)
+        return self._client.get(f"{self._base_url}{path}", params=params)
 
     @retry(
         retry=retry_if_exception_type((httpx.TransportError, httpx.HTTPStatusError, RateLimited)),
@@ -43,12 +85,12 @@ class RedditClient:
         limit: int = 100,
         after: str | None = None,
     ) -> RedditListing:
-        base = f"https://www.reddit.com/r/{subreddit}/{feed}.json"
+        base = f"/r/{subreddit}/{feed}.json"
         params: dict[str, Any] = {"limit": limit, "raw_json": 1}
         if after:
             params["after"] = after
 
-        resp = self._client.get(base, params=params)
+        resp = self._get(base, params)
         if resp.status_code == 429:
             raise RateLimited("429 from reddit")
         resp.raise_for_status()
@@ -81,10 +123,10 @@ class RedditClient:
         Uses public Reddit JSON endpoints (no OAuth). For deep trees, Reddit may return
         "more" placeholders; we ignore those in normalisation for MVP.
         """
-        url = f"https://www.reddit.com/comments/{post_id}.json"
+        url = f"/comments/{post_id}.json"
         params: dict[str, Any] = {"raw_json": 1, "limit": limit, "sort": sort}
 
-        resp = self._client.get(url, params=params)
+        resp = self._get(url, params)
         if resp.status_code == 429:
             raise RateLimited("429 from reddit")
         resp.raise_for_status()
