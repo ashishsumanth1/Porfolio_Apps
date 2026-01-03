@@ -22,12 +22,29 @@ interface Project {
   tags: string[]
   status: 'live' | 'coming-soon'
   path: string
+  externalUrl?: string
   gradient: string
   icon: React.ReactNode
   metrics?: { label: string; value: string }[]
 }
 
 const PROJECTS: Project[] = [
+  {
+    id: 'resume-council',
+    title: 'Resume Council',
+    description: 'A private LLM council that tailors resumes to a role description, runs peer ranking, and exports a polished DOCX. Built for fast, high-quality resume iterations with traceable model feedback.',
+    tags: ['FastAPI', 'React', 'OpenRouter', 'LLM', 'DOCX'],
+    status: 'live',
+    path: '/projects/resume-council',
+    externalUrl: 'https://frontend-production-7332.up.railway.app',
+    gradient: 'from-blue-500 to-indigo-600',
+    icon: <Briefcase className="w-8 h-8" />,
+    metrics: [
+      { label: 'Stages', value: '3' },
+      { label: 'Export', value: 'DOCX' },
+      { label: 'Mode', value: 'Private' }
+    ]
+  },
   {
     id: 'money-radar',
     title: 'Money Radar',
@@ -73,9 +90,83 @@ const PROJECTS: Project[] = [
 
 function ProjectCard({ project }: { project: Project }) {
   const isLive = project.status === 'live'
+  const isExternal = Boolean(project.externalUrl)
   
+  if (isExternal) {
+    return (
+      <a
+        href={project.externalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`card p-8 group relative overflow-hidden ${!isLive && 'opacity-60 cursor-not-allowed'}`}
+      >
+      {/* Gradient accent */}
+      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${project.gradient}`} />
+      
+      {/* Icon */}
+      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${project.gradient} flex items-center justify-center text-white mb-6`}>
+        {project.icon}
+      </div>
+      
+      {/* Status badge */}
+      <div className="flex items-center gap-2 mb-4">
+        {isLive ? (
+          <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            Live
+          </span>
+        ) : (
+          <span className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+            Coming Soon
+          </span>
+        )}
+      </div>
+      
+      {/* Title & Description */}
+      <h3 className="text-2xl font-semibold mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+        {project.title}
+      </h3>
+      <p className="text-[hsl(var(--muted-foreground))] mb-6 line-clamp-3">
+        {project.description}
+      </p>
+      
+      {/* Metrics */}
+      {project.metrics && (
+        <div className="flex gap-6 mb-6">
+          {project.metrics.map((metric) => (
+            <div key={metric.label}>
+              <p className="text-2xl font-semibold tabular-nums">{metric.value}</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{metric.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {/* Tags */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {project.tags.map((tag) => (
+          <span key={tag} className="badge">
+            {tag}
+          </span>
+        ))}
+      </div>
+      
+      {/* CTA */}
+        {isLive && (
+          <div className="flex items-center gap-2 text-sm font-medium text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))] transition-colors">
+            <span>Open App</span>
+            <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </div>
+        )}
+      </a>
+    )
+  }
+
   return (
-    <Link 
+    <Link
       to={isLive ? project.path : '#'}
       className={`card p-8 group relative overflow-hidden ${!isLive && 'opacity-60 cursor-not-allowed'}`}
     >
