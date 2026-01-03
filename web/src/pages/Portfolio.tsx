@@ -264,15 +264,14 @@ export default function Portfolio() {
       <section className="pt-16 pb-8 lg:pt-20 lg:pb-10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="max-w-4xl">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-slate-600 dark:to-slate-800 flex items-center justify-center shadow-lg shadow-blue-500/20 dark:shadow-none">
-                <span className="text-3xl font-bold text-white">AB</span>
-              </div>
-              <div>
+            <div className="flex flex-col gap-2 mb-6">
+              <div className="inline-flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shadow-[0_0_12px_rgba(37,99,235,0.6)]" />
                 <h1 className="text-3xl font-semibold">Ashish Sumanth Banda</h1>
-                <p className="text-lg text-blue-600 dark:text-[hsl(var(--muted-foreground))]">AI Engineer & Data Scientist</p>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">MSc Data Science · University of Greenwich</p>
               </div>
+              <div className="h-px w-24 bg-gradient-to-r from-blue-600 to-indigo-600" />
+              <p className="text-lg text-blue-600 dark:text-[hsl(var(--muted-foreground))]">AI Engineer & Data Scientist</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">MSc Data Science · University of Greenwich</p>
             </div>
             
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight mb-6">
